@@ -15,7 +15,7 @@ public:
     // Run the game loop until the game is over
     void RunLoop();
     // Free all the memory used by the game
-    void Shutdown();
+    void Shutdown() const;
 private:
     // Helper functions for the game loop
     void ProcessInput();
@@ -24,6 +24,10 @@ private:
 
     // Window created by SDL
     SDL_Window* mWindow;
+
+    // Renderer created by SDL
+    SDL_Renderer* mRenderer;
+
     // Game should continue to run while this is true
     bool mIsRunning;
 };
