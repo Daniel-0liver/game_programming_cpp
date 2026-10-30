@@ -80,7 +80,6 @@ void Game::UpdateGame() {
 }
 
 void Game::GenerateOutput() {
-
     // Set the color that will be drawn to the screen (RGBA)
     SDL_SetRenderDrawColor(
         mRenderer,
@@ -93,6 +92,38 @@ void Game::GenerateOutput() {
     // Clear the back buffer to the color set above
     SDL_RenderClear(mRenderer);
 
+    // Draw a wall at the top of the screen
+    drawWall(mRenderer, 0, 0, 1024, THICKNESS);
+
+    // Draw a wall at the bottom of the screen
+    drawWall(mRenderer, 0, 768 - THICKNESS, 1024, THICKNESS);
+
+    // Draw a wall on the right of the screen
+    drawWall(mRenderer, 1024 - THICKNESS, 0, THICKNESS, 768);
+
     // Swap the front and back buffers
     SDL_RenderPresent(mRenderer);
+}
+
+void Game::drawWall(SDL_Renderer *renderer,
+                    float x,
+                    float y,
+                    float width,
+                    float height
+) {
+    SDL_SetRenderDrawColor(
+        renderer,
+        255,
+        255,
+        255,
+        255
+    );
+
+    const SDL_FRect wall = {
+        .x = x,
+        .y = y,
+        .w = width,
+        .h = height
+    };
+    SDL_RenderFillRect(renderer, &wall);
 }
