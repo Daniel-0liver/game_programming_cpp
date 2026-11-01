@@ -4,7 +4,16 @@
 
 #include "Game.h"
 
-Game::Game() : mWindow(nullptr), mIsRunning(true), mRenderer(nullptr) {
+Game::Game() : mWindow(nullptr),
+               mIsRunning(true),
+               mRenderer(nullptr),
+               mTicksCount(0),
+               mPaddleDir(0),
+               paddleH(100) {
+    mBallPos.x = 1024.0f / 2.0f;
+    mBallPos.y = 768.0f / 2.0f;
+    mPaddlePos.x = 0.0f;
+    mPaddlePos.y = 768.0f / 2.0f;
 }
 
 bool Game::Initialize() {
@@ -74,19 +83,56 @@ void Game::ProcessInput() {
     if (state[SDL_SCANCODE_ESCAPE]) {
         mIsRunning = false;
     }
+
+    mPaddleDir = 0;
+    if (state[SDL_SCANCODE_W]) {
+        mPaddleDir -= 1;
+    }
+
+    if (state[SDL_SCANCODE_S]) {
+        mPaddleDir += 1;
+    }
 }
 
 void Game::UpdateGame() {
+    // Wait until 16ms has elapsed since the last frame
+    while (!(SDL_GetTicks() >= mTicksCount + 16)) {
+    }
+
+    // Delta time is the difference in ticks from the last frame to this frame
+    // We need to convert it to seconds to convert milliseconds to seconds
+    float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
+
+    // Clamp the maximum delta time value to 0.05 seconds
+    if (deltaTime > 0.05f) {
+        deltaTime = 0.05f;
+    }
+
+    // Update the paddle position based on the direction and speed
+    if (mPaddleDir != 0) {
+        mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
+
+        // Bound the paddle position to the screen
+        if (mPaddlePos.y <= THICKNESS) {
+            mPaddlePos.y = THICKNESS;
+        }
+        if (mPaddlePos.y >= (768 - THICKNESS) - paddleH) {
+            mPaddlePos.y = (768 - THICKNESS) - paddleH;
+        }
+    }
+
+    // Update the ticks count to the current frame
+    mTicksCount = SDL_GetTicks();
 }
 
 void Game::GenerateOutput() {
     // Set the color that will be drawn to the screen (RGBA)
     SDL_SetRenderDrawColor(
         mRenderer,
+        100,
         0,
-        0,
-        255,
-        255
+        150,
+        200
     );
 
     // Clear the back buffer to the color set above
@@ -100,6 +146,28 @@ void Game::GenerateOutput() {
 
     // Draw a wall on the right of the screen
     drawWall(mRenderer, 1024 - THICKNESS, 0, THICKNESS, 768);
+
+    // Draw the paddle
+    SDL_FRect paddle{
+        .x = (mPaddlePos.x),
+        .y = (mPaddlePos.y),
+        .w = THICKNESS,
+        .h = paddleH
+    };
+
+    SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+
+    SDL_RenderFillRect(mRenderer, &paddle);
+
+    // Draw the ball
+    SDL_FRect ball{
+        .x = (mBallPos.x - THICKNESS / 2.0f),
+        .y = (mBallPos.y - THICKNESS / 2.0f),
+        .w = THICKNESS,
+        .h = THICKNESS
+    };
+
+    SDL_RenderFillRect(mRenderer, &ball);
 
     // Swap the front and back buffers
     SDL_RenderPresent(mRenderer);
@@ -125,5 +193,6 @@ void Game::drawWall(SDL_Renderer *renderer,
         .w = width,
         .h = height
     };
+
     SDL_RenderFillRect(renderer, &wall);
 }

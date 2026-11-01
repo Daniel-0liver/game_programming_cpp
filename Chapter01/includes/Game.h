@@ -4,9 +4,15 @@
 
 #ifndef GAMEPROGRAMMINGCPP_GAME_H
 #define GAMEPROGRAMMINGCPP_GAME_H
+#include <iostream>
 
 #include <SDL3/SDL.h>
 #define THICKNESS 15
+
+struct Vector2 {
+    float x;
+    float y;
+};
 
 class Game {
 public:
@@ -28,6 +34,12 @@ public:
                          float width,
                          float height
     );
+
+    Vector2 mPaddlePos;
+    Vector2 mBallPos;
+    Uint32 mTicksCount;
+    int mPaddleDir;
+    float paddleH;
 
 private:
     // Helper functions for the game loop
