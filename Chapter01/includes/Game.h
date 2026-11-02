@@ -36,10 +36,12 @@ public:
     );
 
     Vector2 mPaddleOnePos{};
+    Vector2 mPaddleTwoPos{};
     Vector2 mBallPos{};
     Vector2 mBallVel{};
     Uint32 mTicksCount;
-    int mPaddleDir;
+    int mPaddleOneDir;
+    int mPaddleTwoDir;
     float paddleH;
 
 private:
