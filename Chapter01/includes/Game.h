@@ -37,6 +37,7 @@ public:
 
     Vector2 mPaddlePos;
     Vector2 mBallPos;
+    Vector2 mBallVel;
     Uint32 mTicksCount;
     int mPaddleDir;
     float paddleH;
