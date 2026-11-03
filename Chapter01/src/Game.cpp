@@ -11,14 +11,16 @@ Game::Game() : mWindow(nullptr),
                mPaddleOneDir(0),
                mPaddleTwoDir(0),
                paddleH(100) {
-    mBallPos.x = 1024.0f / 2.0f;
-    mBallPos.y = 768.0f / 2.0f;
-    mBallVel.x = -200.0f;
-    mBallVel.y = 200.0f;
     mPaddleOnePos.x = 0.0f;
     mPaddleOnePos.y = 768.0f / 2.0f;
     mPaddleTwoPos.x = 1024.0f - THICKNESS;
     mPaddleTwoPos.y = 768.0f / 2.0f;
+    AddBall({1024.0f / 2.0f, 768.0f / 2.0f}, {-200.0f, 200.0f});
+    AddBall({1024.0f / 2.0f, 768.0f / 2.0f}, {200.0f, -200.0f});
+}
+
+void Game::AddBall(Vector2 position, Vector2 velocity) {
+    mBalls.emplace_back(position, velocity);
 }
 
 bool Game::Initialize() {
@@ -150,39 +152,16 @@ void Game::UpdateGame() {
     // Update the ticks count to the current frame
     mTicksCount = SDL_GetTicks();
 
-    // Update ball position based in its velocity
-    mBallPos.x += mBallVel.x * deltaTime;
-    mBallPos.y += mBallVel.y * deltaTime;
-
-    // Bounce if needed
-    const bool diffPaddleOne = mBallPos.y > mPaddleOnePos.y && mBallPos.y < mPaddleOnePos.y + paddleH;
-    const bool diffPaddleTwo = mBallPos.y > mPaddleTwoPos.y && mBallPos.y < mPaddleTwoPos.y + paddleH;
-
-    if (diffPaddleOne && mBallPos.x < THICKNESS && mBallVel.x < 0.0f) {
-        mBallVel.x *= -1.0f;
+    for (auto ball = mBalls.begin(); ball != mBalls.end();) {
+        if (!ball->Update(deltaTime, mPaddleOnePos, mPaddleTwoPos, paddleH)) {
+            ball = mBalls.erase(ball);
+        } else {
+            ++ball;
+        }
     }
 
-    if (diffPaddleTwo && mBallPos.x > (1024.0f - THICKNESS) && mBallVel.x > 0.0f) {
-        mBallVel.x *= -1.0f;
-    }
-
-    // Did the ball go off the screen? (if so, end game)
-    if (mBallPos.x <= 0.0f) {
+    if (mBalls.empty()) {
         mIsRunning = false;
-    }
-
-    if (mBallPos.x >= 1024.0f) {
-        mIsRunning = false;
-    }
-
-    // Did the ball collide with the top wall?
-    if (mBallPos.y <= THICKNESS && mBallVel.y < 0.0f) {
-        mBallVel.y *= -1;
-    }
-    // Did the ball collide with the bottom wall?
-    else if (mBallPos.y >= (768 - THICKNESS) &&
-             mBallVel.y > 0.0f) {
-        mBallVel.y *= -1;
     }
 }
 
@@ -226,21 +205,9 @@ void Game::GenerateOutput() {
     SDL_RenderFillRect(mRenderer, &paddleOne);
     SDL_RenderFillRect(mRenderer, &paddleTwo);
 
-    // Draw the ball
-    SDL_FRect ball{
-        .x = (mBallPos.x - THICKNESS / 2.0f),
-        .y = (mBallPos.y - THICKNESS / 2.0f),
-        .w = THICKNESS,
-        .h = THICKNESS
-    };
-
-    SDL_RenderFillRect(mRenderer, &ball);
-
-    SDL_SetRenderDrawColor(mRenderer, 255, 0, 0, 255);
-    SDL_RenderLine(mRenderer, mBallPos.x, mBallPos.y, mPaddleOnePos.x, mPaddleOnePos.y);
-
-    SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, 255);
-    SDL_RenderLine(mRenderer, mBallPos.x, mBallPos.y, mPaddleTwoPos.x, mPaddleTwoPos.y);
+    for (const Ball& ball : mBalls) {
+        ball.Draw(mRenderer);
+    }
 
     // Swap the front and back buffers
     SDL_RenderPresent(mRenderer);

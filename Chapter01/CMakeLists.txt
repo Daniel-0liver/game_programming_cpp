@@ -23,6 +23,8 @@ add_executable(Chapter01
     src/main.cpp
         src/Game.cpp
         includes/Game.h
+        src/Ball.cpp
+        includes/Ball.h
 )
 
 target_include_directories(Chapter01 PRIVATE

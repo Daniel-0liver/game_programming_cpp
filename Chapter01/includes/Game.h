@@ -4,15 +4,10 @@
 
 #ifndef GAMEPROGRAMMINGCPP_GAME_H
 #define GAMEPROGRAMMINGCPP_GAME_H
-#include <iostream>
 
+#include <vector>
 #include <SDL3/SDL.h>
-#define THICKNESS 15
-
-struct Vector2 {
-    float x;
-    float y;
-};
+#include "Ball.h"
 
 class Game {
 public:
@@ -37,12 +32,11 @@ public:
 
     Vector2 mPaddleOnePos{};
     Vector2 mPaddleTwoPos{};
-    Vector2 mBallPos{};
-    Vector2 mBallVel{};
     Uint32 mTicksCount;
     int mPaddleOneDir;
     int mPaddleTwoDir;
     float paddleH;
+    void AddBall(Vector2 position, Vector2 velocity);
 
 private:
     // Helper functions for the game loop
@@ -60,6 +54,8 @@ private:
 
     // Game should continue to run while this is true
     bool mIsRunning;
+
+    std::vector<Ball> mBalls;
 };
 
 
