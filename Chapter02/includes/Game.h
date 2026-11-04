@@ -1,0 +1,11 @@
+#ifndef GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H
+#define GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H
+
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+
+class Game {
+
+};
+
+#endif // GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H

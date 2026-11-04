@@ -4,7 +4,7 @@ project(GameProgrammingCpp LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Shared Dependencies
+# Shared Dependencies: SDL3
 find_package(SDL3 3.0 QUIET)
 if(NOT SDL3_FOUND)
     message(STATUS "[Root] SDL3 not found locally; fetching via FetchContent...")
@@ -18,5 +18,20 @@ if(NOT SDL3_FOUND)
     FetchContent_MakeAvailable(SDL3)
 endif()
 
+# Shared Dependencies: SDL3_image
+find_package(SDL3_image 3.0 QUIET)
+if(NOT SDL3_image_FOUND)
+    message(STATUS "[Root] SDL3_image not found locally; fetching via FetchContent...")
+    include(FetchContent)
+    FetchContent_Declare(
+        SDL3_image
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+        GIT_TAG release-3.4.2
+        GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(SDL3_image)
+endif()
+
 # Chapter subdirectories
 add_subdirectory(Chapter01)
+add_subdirectory(Chapter02)
