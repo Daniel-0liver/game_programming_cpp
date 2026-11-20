@@ -1,11 +1,17 @@
-#ifndef GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H
-#define GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H
-
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-
+#pragma once
+#include "Actor.h"
 class Game {
-
+public:
+    ~Game();
+    bool Initialize();
+    void Run(float maxSeconds = 0);
+private:
+    void ResetScene();
+    void ProcessInput();
+    void Draw();
+    SDL_Window* mWindow{};
+    SDL_Renderer* mRenderer{};
+    bool mRunning{true};
+    bool mPaused{};
+    std::vector<std::unique_ptr<Actor>> mActors;
 };
-
-#endif // GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H

@@ -53,4 +53,6 @@ target_link_libraries(Chapter02 PRIVATE
 )
 
 # Copy assets folder to the build output directory
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+endif()
