@@ -37,6 +37,10 @@ add_executable(Chapter02
     src/main.cpp
     src/Game.cpp
     includes/Game.h
+        src/Component.cpp
+        includes/Component.h
+        src/Actor.cpp
+        includes/Actor.h
 )
 
 target_include_directories(Chapter02 PRIVATE
