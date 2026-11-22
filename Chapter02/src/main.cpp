@@ -8,11 +8,13 @@
 int main(int argc, char* argv[]) {
     Game game;
     bool init = game.Initialize();
-    if (!init) {
-        std::cout << "Failed to initialize the game." << std::endl;
-        return -1;
-    } else {
+    if (init) {
         game.RunLoop();
     }
     game.Shutdown();
+    if (!init) {
+        std::cout << "Failed to initialize the game." << std::endl;
+        return 1;
+    }
+    return 0;
 }
