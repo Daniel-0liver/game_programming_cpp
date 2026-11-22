@@ -1,17 +1,30 @@
-#pragma once
+#ifndef GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H
+#define GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H
+
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+
 #include "Actor.h"
+
 class Game {
 public:
-    ~Game();
     bool Initialize();
-    void Run(float maxSeconds = 0);
+    void RunLoop();
+    void Shutdown() const;
 private:
-    void ResetScene();
     void ProcessInput();
-    void Draw();
-    SDL_Window* mWindow{};
-    SDL_Renderer* mRenderer{};
-    bool mRunning{true};
-    bool mPaused{};
-    std::vector<std::unique_ptr<Actor>> mActors;
+    void UpdateGame();
+    void GenerateOutput();
+
+    SDL_Window      *mWindow{};
+    SDL_Renderer    *mRenderer{};
+    bool            mIsRunning{true};
+    Actor           mGreyWall{"GreyWall"};
+    Actor           mGreenBlock{"GreenBlock"};
+    Actor           mYellowParticle{"YellowParticle"};
+    Actor           mInvisibleTemp{"InvisibleTemp"};
+    Uint32          mTicksCount{0};
+    float           mDeltaTime;
 };
+
+#endif // GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H

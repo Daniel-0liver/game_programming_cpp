@@ -1,89 +1,141 @@
 #include "Game.h"
-#include "Component.h"
-#include <algorithm>
-#include <iostream>
-#include <string>
+
+#include "LifeTimeComponent.h"
+#include "MoveComponent.h"
+#include "RetangleComponent.h"
+
 bool Game::Initialize() {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        std::cerr << SDL_GetError() << '\n'; return false;
+    int sdlResult = SDL_Init(SDL_INIT_VIDEO);
+
+    if (!sdlResult) {
+        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+        return false;
     }
-    if (!SDL_CreateWindowAndRenderer("Exercicio 5", 960, 600, 0, &mWindow, &mRenderer)) {
-        std::cerr << SDL_GetError() << '\n'; return false;
+
+    mWindow = SDL_CreateWindow(
+            "Chapter 02",
+            1024,
+            768,
+            0
+    );
+
+    mRenderer = SDL_CreateRenderer(
+        mWindow,
+        nullptr
+    );
+
+    if (!mRenderer) {
+        SDL_Log("Failed to create renderer: %s", SDL_GetError());
+        return false;
     }
-    SDL_SetRenderVSync(mRenderer, 1);
-    ResetScene();
+
+    if (!mWindow) {
+        SDL_Log("Failed to create window: %s", SDL_GetError());
+        return false;
+    }
+
+    mGreyWall.setPosition({.x = 500.0f, .y = 650.0f});
+    mGreyWall.AddComponent(std::make_unique<RetangleComponent>(
+        &mGreyWall,
+        650.0f,
+        100.0f,
+        SDL_Color{.r = 138, .g = 140, .b = 137, .a = 255}
+    ));
+
+    mGreenBlock.setPosition({.x = 100.0f, .y = 80.0f});
+    mGreenBlock.AddComponent(std::make_unique<RetangleComponent>(
+        &mGreenBlock,
+        100.0f,
+        100.0f,
+        SDL_Color{.r = 97, .g = 235, .b = 52, .a = 255}
+    ));
+    mGreenBlock.AddComponent(std::make_unique<MoveComponent>(
+        &mGreenBlock,
+        Vector2{.x = 100.0f, .y = 100.0f}
+    ));
+
+    mYellowParticle.setPosition({.x = 150.0f, .y = 120.0f});
+    mYellowParticle.AddComponent(std::make_unique<RetangleComponent>(
+        &mYellowParticle,
+        10.0f,
+        10.0f,
+        SDL_Color{.r = 207, .g = 207, .b = 54, .a = 255}
+    ));
+    mYellowParticle.AddComponent(std::make_unique<MoveComponent>(
+        &mYellowParticle,
+        Vector2{.x = 200.0f, .y = 0.0f}
+    ));
+    mYellowParticle.AddComponent(std::make_unique<LifeTimeComponent>(
+        &mYellowParticle,
+        2.0f
+    ));
+
+    mInvisibleTemp.AddComponent(std::make_unique<LifeTimeComponent>(
+        &mInvisibleTemp,
+        5.0f
+    ));
+
     return true;
 }
-Game::~Game() {
-    mActors.clear();
-    SDL_DestroyRenderer(mRenderer);
-    SDL_DestroyWindow(mWindow);
-    SDL_Quit();
+
+void Game::RunLoop() {
+    while (mIsRunning) {
+        ProcessInput();
+        UpdateGame();
+        GenerateOutput();
+    }
 }
-void Game::ResetScene() {
-    mActors.clear();
-    mPaused = false;
-    auto wall = std::make_unique<Actor>("Parede cinza", Vector2{480, 500});
-    wall->AddComponent(std::make_unique<RectangleComponent>(wall.get(), 800, 30, SDL_Color{145, 150, 160, 255}));
-    mActors.push_back(std::move(wall));
-    auto block = std::make_unique<Actor>("Bloco verde", Vector2{80, 220});
-    block->AddComponent(std::make_unique<MoveComponent>(block.get(), Vector2{65, 0}));
-    block->AddComponent(std::make_unique<RectangleComponent>(block.get(), 70, 70, SDL_Color{70, 210, 120, 255}));
-    mActors.push_back(std::move(block));
-    auto particle = std::make_unique<Actor>("Particula amarela", Vector2{80, 380});
-    particle->AddComponent(std::make_unique<MoveComponent>(particle.get(), Vector2{160, -40}));
-    particle->AddComponent(std::make_unique<RectangleComponent>(particle.get(), 26, 26, SDL_Color{255, 215, 65, 255}));
-    particle->AddComponent(std::make_unique<LifetimeComponent>(particle.get(), 2));
-    mActors.push_back(std::move(particle));
-    auto timer = std::make_unique<Actor>("Temporizador invisivel (3 segundos)");
-    timer->AddComponent(std::make_unique<LifetimeComponent>(timer.get(), 3));
-    mActors.push_back(std::move(timer));
-    std::cout << "Cena reiniciada. Espaco: pausa | R: reinicia | Esc: sai\n";
-}
+
 void Game::ProcessInput() {
     SDL_Event event;
+    const bool *state = SDL_GetKeyboardState(nullptr);
+
     while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_EVENT_QUIT) mRunning = false;
-        if (event.type == SDL_EVENT_KEY_DOWN && !event.key.repeat) {
-            if (event.key.key == SDLK_ESCAPE) mRunning = false;
-            if (event.key.key == SDLK_R) ResetScene();
-            if (event.key.key == SDLK_SPACE) {
-                mPaused = !mPaused;
-                for (const auto& actor : mActors)
-                    if (actor->getState() != State::Dead)
-                        actor->setState(mPaused ? State::Paused : State::Active);
-            }
+        switch (event.type) {
+            case SDL_EVENT_QUIT:
+                mIsRunning = false;
+                break;
+            default: ;
         }
     }
+
+    if (state[SDL_SCANCODE_ESCAPE]) {
+        mIsRunning = false;
+    }
 }
-void Game::Draw() {
-    SDL_SetRenderDrawColor(mRenderer, 22, 27, 38, 255);
+
+void Game::UpdateGame() {
+    while (!(SDL_GetTicks() >= mTicksCount + 16)) {}
+
+    mDeltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
+
+    if (mDeltaTime > 0.05f) {
+        mDeltaTime = 0.05f;
+    }
+
+    mGreyWall.Update(mDeltaTime);
+    mGreenBlock.Update(mDeltaTime);
+    mYellowParticle.Update(mDeltaTime);
+    mInvisibleTemp.Update(mDeltaTime);
+
+    mTicksCount = SDL_GetTicks();
+}
+
+void Game::GenerateOutput() {
+    SDL_SetRenderDrawColor(mRenderer, 24, 27, 34, 255);
     SDL_RenderClear(mRenderer);
-    for (const auto& actor : mActors) actor->Draw(mRenderer);
-    SDL_SetRenderDrawColor(mRenderer, 225, 230, 240, 255);
-    SDL_RenderDebugText(mRenderer, 24, 24, "EXERCICIO 5 - ACTORS E COMPONENTS");
-    SDL_RenderDebugText(mRenderer, 24, 50, "ESPACO: pausa | R: reinicia | ESC: sai");
-    SDL_RenderDebugText(mRenderer, 24, 90, "Cinza: desenho | Verde: movimento + desenho");
-    SDL_RenderDebugText(mRenderer, 24, 114, "Amarelo: movimento + desenho + vida de 2s");
-    const std::string status = std::string(mPaused ? "PAUSADO" : "RODANDO") +
-        " | Particula: " + (mActors[2]->getState() == State::Dead ? "morta" : "viva") +
-        " | Timer invisivel: " + (mActors[3]->getState() == State::Dead ? "expirou" : "ativo");
-    SDL_RenderDebugText(mRenderer, 24, 550, status.c_str());
+    mGreyWall.Draw(mRenderer);
+    mGreenBlock.Draw(mRenderer);
+    mYellowParticle.Draw(mRenderer);
     SDL_RenderPresent(mRenderer);
 }
-void Game::Run(float maxSeconds) {
-    const Uint64 start = SDL_GetTicksNS();
-    Uint64 previous = start;
-    while (mRunning) {
-        // Reset/input happens before calculating dt: reset frames begin at zero.
-        ProcessInput();
-        const Uint64 now = SDL_GetTicksNS();
-        const float dt = std::min(static_cast<float>(now - previous) / 1.0e9f, 0.05f);
-        previous = now;
-        if (!mRunning) break;
-        for (const auto& actor : mActors) actor->Update(dt);
-        Draw();
-        if (maxSeconds > 0 && static_cast<double>(now - start) / 1.0e9 >= maxSeconds) break;
-        SDL_Delay(1);
+
+void Game::Shutdown() const {
+    if (mRenderer) {
+        SDL_DestroyRenderer(mRenderer);
     }
+    if (mWindow) {
+        SDL_DestroyWindow(mWindow);
+    }
+    SDL_Quit();
 }

@@ -41,6 +41,14 @@ add_executable(Chapter02
         includes/Component.h
         src/Actor.cpp
         includes/Actor.h
+        src/RetangleComponent.cpp
+        includes/RetangleComponent.h
+        src/MoveComponent.cpp
+        includes/MoveComponent.h
+        src/PositionLogComponent.cpp
+        includes/PositionLogComponent.h
+        src/LifeTimeComponent.cpp
+        includes/LifeTimeComponent.h
 )
 
 target_include_directories(Chapter02 PRIVATE
@@ -53,6 +61,4 @@ target_link_libraries(Chapter02 PRIVATE
 )
 
 # Copy assets folder to the build output directory
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-endif()
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
