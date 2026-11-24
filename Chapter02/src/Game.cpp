@@ -34,46 +34,54 @@ bool Game::Initialize() {
         return false;
     }
 
-    mGreyWall.setPosition({.x = 500.0f, .y = 650.0f});
-    mGreyWall.AddComponent(std::make_unique<RetangleComponent>(
-        &mGreyWall,
+    auto mGreyWall = std::make_unique<Actor>("GreyWall");
+    mGreyWall->setPosition({.x = 500.0f, .y = 650.0f});
+    mGreyWall->AddComponent(std::make_unique<RetangleComponent>(
+        mGreyWall.get(),
         650.0f,
         100.0f,
         SDL_Color{.r = 138, .g = 140, .b = 137, .a = 255}
     ));
+    AddActor(std::move(mGreyWall));
 
-    mGreenBlock.setPosition({.x = 100.0f, .y = 80.0f});
-    mGreenBlock.AddComponent(std::make_unique<RetangleComponent>(
-        &mGreenBlock,
+    auto mGreenBlock = std::make_unique<Actor>("GreenBlock");
+    mGreenBlock->setPosition({.x = 100.0f, .y = 80.0f});
+    mGreenBlock->AddComponent(std::make_unique<RetangleComponent>(
+        mGreenBlock.get(),
         100.0f,
         100.0f,
         SDL_Color{.r = 97, .g = 235, .b = 52, .a = 255}
     ));
-    mGreenBlock.AddComponent(std::make_unique<MoveComponent>(
-        &mGreenBlock,
+    mGreenBlock->AddComponent(std::make_unique<MoveComponent>(
+        mGreenBlock.get(),
         Vector2{.x = 100.0f, .y = 100.0f}
     ));
+    AddActor(std::move(mGreenBlock));
 
-    mYellowParticle.setPosition({.x = 150.0f, .y = 120.0f});
-    mYellowParticle.AddComponent(std::make_unique<RetangleComponent>(
-        &mYellowParticle,
+    auto mYellowParticle = std::make_unique<Actor>("YellowParticle");
+    mYellowParticle->setPosition({.x = 150.0f, .y = 120.0f});
+    mYellowParticle->AddComponent(std::make_unique<RetangleComponent>(
+        mYellowParticle.get(),
         10.0f,
         10.0f,
         SDL_Color{.r = 207, .g = 207, .b = 54, .a = 255}
     ));
-    mYellowParticle.AddComponent(std::make_unique<MoveComponent>(
-        &mYellowParticle,
+    mYellowParticle->AddComponent(std::make_unique<MoveComponent>(
+        mYellowParticle.get(),
         Vector2{.x = 200.0f, .y = 0.0f}
     ));
-    mYellowParticle.AddComponent(std::make_unique<LifeTimeComponent>(
-        &mYellowParticle,
+    mYellowParticle->AddComponent(std::make_unique<LifeTimeComponent>(
+        mYellowParticle.get(),
         2.0f
     ));
+    AddActor(std::move(mYellowParticle));
 
-    mInvisibleTemp.AddComponent(std::make_unique<LifeTimeComponent>(
-        &mInvisibleTemp,
+    auto mInvisibleTemp = std::make_unique<Actor>("InvisibleTemp");
+    mInvisibleTemp->AddComponent(std::make_unique<LifeTimeComponent>(
+        mInvisibleTemp.get(),
         5.0f
     ));
+    AddActor(std::move(mInvisibleTemp));
 
     return true;
 }
@@ -113,20 +121,18 @@ void Game::UpdateGame() {
         mDeltaTime = 0.05f;
     }
 
-    mGreyWall.Update(mDeltaTime);
-    mGreenBlock.Update(mDeltaTime);
-    mYellowParticle.Update(mDeltaTime);
-    mInvisibleTemp.Update(mDeltaTime);
-
+    UpdateActors();
+    auto actorsCount = mActors.size();
+    SDL_Log(std::string("Actors count: " + std::to_string(actorsCount)).c_str());
     mTicksCount = SDL_GetTicks();
 }
 
 void Game::GenerateOutput() {
     SDL_SetRenderDrawColor(mRenderer, 24, 27, 34, 255);
     SDL_RenderClear(mRenderer);
-    mGreyWall.Draw(mRenderer);
-    mGreenBlock.Draw(mRenderer);
-    mYellowParticle.Draw(mRenderer);
+
+    DrawActors();
+
     SDL_RenderPresent(mRenderer);
 }
 
@@ -138,4 +144,25 @@ void Game::Shutdown() const {
         SDL_DestroyWindow(mWindow);
     }
     SDL_Quit();
+}
+
+void Game::AddActor(std::unique_ptr<Actor> actor) {
+    mActors.emplace_back(std::move(actor));
+}
+
+void Game::RemoveActor() {
+    std::erase_if(mActors, [](const std::unique_ptr<Actor> &a) { return a.get()->getState() == State::Dead; });
+}
+
+void Game::UpdateActors() {
+    for (const auto &actor : mActors) {
+        actor->Update(mDeltaTime);
+    }
+    RemoveActor();
+}
+
+void Game::DrawActors() {
+    for (const auto &actor : mActors) {
+        actor->Draw(mRenderer);
+    }
 }

@@ -11,20 +11,22 @@ public:
     bool Initialize();
     void RunLoop();
     void Shutdown() const;
+    std::vector<std::unique_ptr<Actor>> mActors;
 private:
     void ProcessInput();
     void UpdateGame();
     void GenerateOutput();
 
+    void AddActor(std::unique_ptr<Actor> actor);
+    void RemoveActor();
+    void UpdateActors();
+    void DrawActors();
+
     SDL_Window      *mWindow{};
     SDL_Renderer    *mRenderer{};
     bool            mIsRunning{true};
-    Actor           mGreyWall{"GreyWall"};
-    Actor           mGreenBlock{"GreenBlock"};
-    Actor           mYellowParticle{"YellowParticle"};
-    Actor           mInvisibleTemp{"InvisibleTemp"};
     Uint32          mTicksCount{0};
-    float           mDeltaTime;
+    float           mDeltaTime{0.0f};
 };
 
 #endif // GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H

@@ -18,6 +18,10 @@ void Actor::setPosition(const Vector2 &newPosition) {
     position = newPosition;
 }
 
+State Actor::getState() {
+    return mState;
+}
+
 void Actor::setState(State state) {
     mState = state;
 }

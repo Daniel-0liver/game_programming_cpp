@@ -33,11 +33,12 @@ public:
     Actor(std::string newName);
     ~Actor();
 
-    Vector2 getPosition() const;
-
     std::string getName() const;
 
+    Vector2 getPosition() const;
     void setPosition(const Vector2 &newPosition);
+
+    State getState();
     void setState(State state);
 
     void Update(float deltaTime);
