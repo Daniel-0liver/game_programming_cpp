@@ -13,10 +13,10 @@ bool Game::Initialize() {
     }
 
     mWindow = SDL_CreateWindow(
-            "Chapter 02",
-            1024,
-            768,
-            0
+        "Chapter 02",
+        1024,
+        768,
+        0
     );
 
     mRenderer = SDL_CreateRenderer(
@@ -113,7 +113,8 @@ void Game::ProcessInput() {
 }
 
 void Game::UpdateGame() {
-    while (!(SDL_GetTicks() >= mTicksCount + 16)) {}
+    while (!(SDL_GetTicks() >= mTicksCount + 16)) {
+    }
 
     mDeltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
 
@@ -122,8 +123,7 @@ void Game::UpdateGame() {
     }
 
     UpdateActors();
-    auto actorsCount = mActors.size();
-    SDL_Log(std::string("Actors count: " + std::to_string(actorsCount)).c_str());
+
     mTicksCount = SDL_GetTicks();
 }
 
@@ -147,22 +147,34 @@ void Game::Shutdown() const {
 }
 
 void Game::AddActor(std::unique_ptr<Actor> actor) {
-    mActors.emplace_back(std::move(actor));
+    if (!mIsUpdating) {
+        mActors.emplace_back(std::move(actor));
+    } else {
+        mPendingActors.emplace_back(std::move(actor));
+    }
 }
 
 void Game::RemoveActor() {
-    std::erase_if(mActors, [](const std::unique_ptr<Actor> &a) { return a.get()->getState() == State::Dead; });
+    std::erase_if(mActors, [](const std::unique_ptr<Actor> &a) {
+        return a->getState() == State::Dead;
+    });
 }
 
 void Game::UpdateActors() {
-    for (const auto &actor : mActors) {
+    mIsUpdating = true;
+    for (auto &actor: mActors) {
         actor->Update(mDeltaTime);
     }
+    for (auto &actor: mPendingActors) {
+        mActors.emplace_back(std::move(actor));
+    }
+    mPendingActors.clear();
+    mIsUpdating = false;
     RemoveActor();
 }
 
 void Game::DrawActors() {
-    for (const auto &actor : mActors) {
+    for (const auto &actor: mActors) {
         actor->Draw(mRenderer);
     }
 }

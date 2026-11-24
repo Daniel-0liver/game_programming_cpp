@@ -12,6 +12,7 @@ public:
     void RunLoop();
     void Shutdown() const;
     std::vector<std::unique_ptr<Actor>> mActors;
+    std::vector<std::unique_ptr<Actor>> mPendingActors;
 private:
     void ProcessInput();
     void UpdateGame();
@@ -27,6 +28,7 @@ private:
     bool            mIsRunning{true};
     Uint32          mTicksCount{0};
     float           mDeltaTime{0.0f};
+    bool            mIsUpdating{false};
 };
 
 #endif // GAMEPROGRAMMINGCPP_CHAPTER02_GAME_H
