@@ -3,6 +3,7 @@
 #include "LifeTimeComponent.h"
 #include "MoveComponent.h"
 #include "RetangleComponent.h"
+#include "SpawnerComponent.h"
 
 bool Game::Initialize() {
     int sdlResult = SDL_Init(SDL_INIT_VIDEO);
@@ -34,6 +35,13 @@ bool Game::Initialize() {
         return false;
     }
 
+    auto mParticleEmiter = std::make_unique<Actor>("ParticleEmiter");
+    mParticleEmiter->AddComponent(std::make_unique<SpawnerComponent>(
+        this,
+        mParticleEmiter.get()
+    ));
+    AddActor(std::move(mParticleEmiter));
+
     auto mGreyWall = std::make_unique<Actor>("GreyWall");
     mGreyWall->setPosition({.x = 500.0f, .y = 650.0f});
     mGreyWall->AddComponent(std::make_unique<RetangleComponent>(
@@ -57,24 +65,6 @@ bool Game::Initialize() {
         Vector2{.x = 100.0f, .y = 100.0f}
     ));
     AddActor(std::move(mGreenBlock));
-
-    auto mYellowParticle = std::make_unique<Actor>("YellowParticle");
-    mYellowParticle->setPosition({.x = 150.0f, .y = 120.0f});
-    mYellowParticle->AddComponent(std::make_unique<RetangleComponent>(
-        mYellowParticle.get(),
-        10.0f,
-        10.0f,
-        SDL_Color{.r = 207, .g = 207, .b = 54, .a = 255}
-    ));
-    mYellowParticle->AddComponent(std::make_unique<MoveComponent>(
-        mYellowParticle.get(),
-        Vector2{.x = 200.0f, .y = 0.0f}
-    ));
-    mYellowParticle->AddComponent(std::make_unique<LifeTimeComponent>(
-        mYellowParticle.get(),
-        2.0f
-    ));
-    AddActor(std::move(mYellowParticle));
 
     auto mInvisibleTemp = std::make_unique<Actor>("InvisibleTemp");
     mInvisibleTemp->AddComponent(std::make_unique<LifeTimeComponent>(
@@ -165,16 +155,36 @@ void Game::UpdateActors() {
     for (auto &actor: mActors) {
         actor->Update(mDeltaTime);
     }
+    RemoveActor();
     for (auto &actor: mPendingActors) {
         mActors.emplace_back(std::move(actor));
     }
     mPendingActors.clear();
     mIsUpdating = false;
-    RemoveActor();
 }
 
 void Game::DrawActors() {
     for (const auto &actor: mActors) {
         actor->Draw(mRenderer);
     }
+}
+
+void Game::SpawnParticle() {
+    auto mYellowParticle = std::make_unique<Actor>("YellowParticle");
+    mYellowParticle->setPosition({.x = 150.0f, .y = 120.0f});
+    mYellowParticle->AddComponent(std::make_unique<RetangleComponent>(
+        mYellowParticle.get(),
+        10.0f,
+        10.0f,
+        SDL_Color{.r = 207, .g = 207, .b = 54, .a = 255}
+    ));
+    mYellowParticle->AddComponent(std::make_unique<MoveComponent>(
+        mYellowParticle.get(),
+        Vector2{.x = 200.0f, .y = 0.0f}
+    ));
+    mYellowParticle->AddComponent(std::make_unique<LifeTimeComponent>(
+        mYellowParticle.get(),
+        2.0f
+    ));
+    AddActor(std::move(mYellowParticle));
 }

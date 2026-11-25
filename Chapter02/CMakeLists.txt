@@ -49,6 +49,8 @@ add_executable(Chapter02
         includes/PositionLogComponent.h
         src/LifeTimeComponent.cpp
         includes/LifeTimeComponent.h
+        src/SpawnerComponent.cpp
+        includes/SpawnerComponent.h
 )
 
 target_include_directories(Chapter02 PRIVATE
