@@ -32,6 +32,7 @@ private:
 
     SDL_Window *mWindow{};
     SDL_Renderer *mRenderer{};
+    SDL_Texture *mCharacter{};
     bool mIsRunning{true};
     Uint32 mTicksCount{0};
     float mDeltaTime{0.0f};

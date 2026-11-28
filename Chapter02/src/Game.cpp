@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include <SDL3_image/SDL_image.h>
 #include "LifeTimeComponent.h"
 #include "MoveComponent.h"
 #include "RetangleComponent.h"
@@ -35,6 +36,12 @@ bool Game::Initialize() {
         return false;
     }
 
+    mCharacter = IMG_LoadTexture(mRenderer, "assets/Character01.png");
+    if (!mCharacter) {
+        SDL_Log("Failed to create Character: %s", SDL_GetError());
+        return false;
+    }
+
     auto mParticleEmiter = std::make_unique<Actor>("ParticleEmiter");
     mParticleEmiter->AddComponent(std::make_unique<SpawnerComponent>(
         this,
@@ -48,7 +55,8 @@ bool Game::Initialize() {
         mGreyWall.get(),
         650.0f,
         100.0f,
-        SDL_Color{.r = 138, .g = 140, .b = 137, .a = 255}
+        SDL_Color{.r = 138, .g = 140, .b = 137, .a = 255},
+        mCharacter
     ));
     AddActor(std::move(mGreyWall));
 
@@ -58,7 +66,8 @@ bool Game::Initialize() {
         mGreenBlock.get(),
         100.0f,
         100.0f,
-        SDL_Color{.r = 97, .g = 235, .b = 52, .a = 255}
+        SDL_Color{.r = 97, .g = 235, .b = 52, .a = 255},
+        mCharacter
     ));
     mGreenBlock->AddComponent(std::make_unique<MoveComponent>(
         mGreenBlock.get(),
@@ -127,6 +136,9 @@ void Game::GenerateOutput() {
 }
 
 void Game::Shutdown() const {
+    if (mCharacter) {
+        SDL_DestroyTexture(mCharacter);
+    }
     if (mRenderer) {
         SDL_DestroyRenderer(mRenderer);
     }
@@ -176,7 +188,8 @@ void Game::SpawnParticle() {
         mYellowParticle.get(),
         10.0f,
         10.0f,
-        SDL_Color{.r = 207, .g = 207, .b = 54, .a = 255}
+        SDL_Color{.r = 207, .g = 207, .b = 54, .a = 255},
+        mCharacter
     ));
     mYellowParticle->AddComponent(std::make_unique<MoveComponent>(
         mYellowParticle.get(),

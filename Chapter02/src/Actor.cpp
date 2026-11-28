@@ -3,48 +3,75 @@
 //
 
 #include "Actor.h"
-#include "Component.h"
 
-Actor::Actor(std::string newName) : name(newName), mState(State::Active) {}
+#include <algorithm>
+
+Actor::Actor(Game *game)
+    : mState(EActive),
+    mGame(game),
+    mPosition(Vector2::Zero),
+    mScale(1.0f),
+    mRotation(0.0f)
+{
+    mGame->AddActor(this);
+}
 
 Actor::~Actor() = default;
 
-
-Vector2 Actor::getPosition() const {
-    return position;
+Vector2 Actor::GetPosition() const {
+    return mPosition;
 }
 
-void Actor::setPosition(const Vector2 &newPosition) {
-    position = newPosition;
+void Actor::SetPosition(const Vector2 &newPosition) {
+    mPosition = newPosition;
 }
 
-State Actor::getState() {
+float Actor::GetScale() const {
+    return mScale;
+}
+
+void Actor::SetScale(float newScale) {
+    mScale = newScale;
+}
+
+float Actor::GetRotation() const {
+    return mRotation;
+}
+
+void Actor::SetRotation(float newRotation) {
+    mRotation = newRotation;
+}
+
+Actor::State Actor::GetState() const {
     return mState;
 }
 
-void Actor::setState(State state) {
+void Actor::SetState(State state) {
     mState = state;
 }
 
-std::string Actor::getName() const {
-    return name;
+Game *Actor::GetGame() {
+    return mGame;
 }
 
 void Actor::Update(float deltaTime) {
-    if (mState != State::Active) return;
-    for (const auto &component : mComponents) {
-        component->Update(deltaTime);
+    if (mState == EActive) {
+        UpdateComponents(deltaTime);
+        UpdateActor(deltaTime);
     }
 }
 
-void Actor::Draw(SDL_Renderer *render) const {
-    if (mState == State::Dead) return;
-    for (const auto &component : mComponents) {
-        component->Draw(render);
+void Actor::UpdateComponents(float deltaTime) {
+    for (auto comp : mComponents) {
+        comp->Update(deltaTime);
     }
 }
 
-void Actor::AddComponent(std::unique_ptr<Component> component) {
+void Actor::UpdateActor(float deltaTime) {
+
+}
+
+void Actor::AddComponent(Component *component) {
     int myOrder = component->getUpdateOrder();
     auto iter = mComponents.begin();
     for (; iter != mComponents.end(); ++iter) {
@@ -52,5 +79,16 @@ void Actor::AddComponent(std::unique_ptr<Component> component) {
             break;
         }
     }
-    mComponents.insert(iter, std::move(component));
+    mComponents.insert(iter, component);
+}
+
+void Actor::RemoveComponent(Component *component) {
+    auto iter = std::find(
+        mComponents.begin(),
+        mComponents.end(),
+        component
+    );
+    if (iter != mComponents.end()) {
+        mComponents.erase(iter);
+    }
 }

@@ -6,44 +6,60 @@
 #define GAMEPROGRAMMINGCPP_ACTOR_H
 
 #include <vector>
-#include <memory>
-#include <iostream>
-#include <SDL3/SDL.h>
+#include <Math.h>
+#include "Component.h"
 
+
+class Game;
 class Component;
 
-struct Vector2 {
-    float x;
-    float y;
-};
-
-enum class State {
-    Active,
-    Paused,
-    Dead
-};
-
 class Actor {
-private:
-    Vector2 position;
-    std::string name;
-    std::vector<std::unique_ptr<Component>> mComponents;
-    State mState;
 public:
-    Actor(std::string newName);
-    ~Actor();
+    enum State {
+        EActive,
+        EPause,
+        EDead
+    };
 
-    std::string getName() const;
+    Actor(Game *game);
 
-    Vector2 getPosition() const;
-    void setPosition(const Vector2 &newPosition);
-
-    State getState();
-    void setState(State state);
+    virtual ~Actor();
 
     void Update(float deltaTime);
-    void Draw(SDL_Renderer *render) const;
-    void AddComponent(std::unique_ptr<Component> component);
+
+    void UpdateComponents(float deltaTime);
+
+    virtual void UpdateActor(float deltaTime);
+
+    void AddComponent(Component *component);
+
+    void RemoveComponent(Component *component);
+
+    Vector2 GetPosition() const;
+
+    void SetPosition(const Vector2 &newPosition);
+
+    float GetScale() const;
+
+    void SetScale(float newScale);
+
+    float GetRotation() const;
+
+    void SetRotation(float newRotation);
+
+    State GetState() const;
+
+    void SetState(State state);
+
+    Game *GetGame();
+
+private:
+    Vector2 mPosition;
+    float mScale;
+    float mRotation;
+    std::vector<Component *> mComponents;
+    State mState;
+    Game *mGame;
 };
 
 #endif //GAMEPROGRAMMINGCPP_ACTOR_H

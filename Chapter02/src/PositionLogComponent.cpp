@@ -8,6 +8,6 @@ PositionLogComponent::PositionLogComponent(Actor *actor)
     : Component(actor, 200) {}
 
 void PositionLogComponent::Update(float deltaTime) {
-    Vector2 position = mActor->getPosition();
+    Vector2 position = mActor->GetPosition();
     std::cout << mActor->getName() << " log de Posição: (" << position.x << ", " << position.y << ")" << std::endl;
 }

@@ -16,7 +16,7 @@ LifeTimeComponent::LifeTimeComponent(Actor *actor, float lifeTime)
 void LifeTimeComponent::Update(float deltaTime) {
     mLifeTime -= deltaTime;
     if (mLifeTime <= 0.0f) {
-        mActor->setState(State::Dead);
+        mActor->SetState(State::Dead);
         SDL_Log(std::string("Actor " + mActor->getName() + " is dead.").c_str());
     }
 }
